@@ -10,6 +10,8 @@ import (
 	"math"
 	"os"
 	"time"
+	"path/filepath"
+
 )
 
 type QueryStat struct {
@@ -50,7 +52,19 @@ type RunResult struct {
 func ctBytes(ct int) int { return ct * he.CtSize }
 
 func PrintSummary(results []RunResult, slots int, name string) {
-	f, _ := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	dir := filepath.Dir(name)
+	if dir != "." {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Println("failed to create result directory:", err)
+			return
+		}
+	}
+
+	f, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("failed to open summary file:", err)
+		return
+	}
 	defer f.Close()
 
 	w := io.MultiWriter(os.Stdout, f)
