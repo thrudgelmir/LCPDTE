@@ -30,6 +30,7 @@ func main() {
 	K := 8
 	T := 8
 	P := 32
+	D := 12
 	TOL := 1e-3
 	short := false // make to true for short check
 	slots := 1 << 15
@@ -73,7 +74,7 @@ func main() {
 				PrintSummary([]RunResult{r}, slots, dest)
 			}
 		} else {
-			for d := 2; d <= 12; d++ {
+			for d := 2; d <= D; d++ {
 				fmt.Printf("Loop : %d, Mode : %s, Depth : %d\n",L,MODE,d)
 				if MODE == "obo" || MODE == "tree" || MODE == "bsgs" {
 					K = 1
