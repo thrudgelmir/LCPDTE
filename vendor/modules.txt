@@ -1,0 +1,55 @@
+# github.com/ALTree/bigfloat v0.0.0-20220102081255-38c8b72a9924
+## explicit; go 1.15
+github.com/ALTree/bigfloat
+# github.com/davecgh/go-spew v1.1.1
+## explicit
+github.com/davecgh/go-spew/spew
+# github.com/google/go-cmp v0.5.8
+## explicit; go 1.13
+github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/internal/diff
+github.com/google/go-cmp/cmp/internal/flags
+github.com/google/go-cmp/cmp/internal/function
+github.com/google/go-cmp/cmp/internal/value
+# github.com/kr/text v0.2.0
+## explicit
+# github.com/pmezard/go-difflib v1.0.0
+## explicit
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.8.0
+## explicit; go 1.13
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+# github.com/tuneinsight/lattigo/v6 v6.1.1
+## explicit; go 1.21
+github.com/tuneinsight/lattigo/v6/circuits/ckks/bootstrapping
+github.com/tuneinsight/lattigo/v6/circuits/ckks/dft
+github.com/tuneinsight/lattigo/v6/circuits/ckks/lintrans
+github.com/tuneinsight/lattigo/v6/circuits/ckks/mod1
+github.com/tuneinsight/lattigo/v6/circuits/ckks/polynomial
+github.com/tuneinsight/lattigo/v6/circuits/common/lintrans
+github.com/tuneinsight/lattigo/v6/circuits/common/polynomial
+github.com/tuneinsight/lattigo/v6/core/rlwe
+github.com/tuneinsight/lattigo/v6/ring
+github.com/tuneinsight/lattigo/v6/ring/ringqp
+github.com/tuneinsight/lattigo/v6/schemes
+github.com/tuneinsight/lattigo/v6/schemes/ckks
+github.com/tuneinsight/lattigo/v6/utils
+github.com/tuneinsight/lattigo/v6/utils/bignum
+github.com/tuneinsight/lattigo/v6/utils/buffer
+github.com/tuneinsight/lattigo/v6/utils/cosine
+github.com/tuneinsight/lattigo/v6/utils/factorization
+github.com/tuneinsight/lattigo/v6/utils/sampling
+github.com/tuneinsight/lattigo/v6/utils/structs
+# golang.org/x/crypto v0.18.0
+## explicit; go 1.18
+golang.org/x/crypto/blake2b
+# golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+## explicit; go 1.18
+golang.org/x/exp/constraints
+# golang.org/x/sys v0.16.0
+## explicit; go 1.18
+golang.org/x/sys/cpu
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3

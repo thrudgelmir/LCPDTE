@@ -1,0 +1,156 @@
+# LCPDTE
+
+Code for the paper:
+> **Low-Complexity Private Decision Tree Evaluation over Homomorphic Encryption**
+> *ACM CCS 2026*
+
+Implementation of the **LCPDTE** protocol — a CKKS-based non-interactive Private Decision Tree Evaluation (PDTE) scheme with end-to-end server complexity O(p · √2^D), where D is the tree depth and p is the input bit-length.
+
+---
+
+## Requirements
+
+**Go 1.26.4** — [Download](https://go.dev/dl/go1.26.4.linux-amd64.tar.gz)
+
+```bash
+wget https://go.dev/dl/go1.26.4.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.4.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+```
+
+This project was built and tested on **Linux** (Ubuntu). Other platforms are not officially supported.
+
+---
+
+## Experimental Environment
+
+All results in the paper were obtained on the following hardware:
+
+| Component | Spec |
+|-----------|------|
+| CPU | AMD Ryzen 9 7900X |
+| RAM | 128 GB |
+| OS | Linux |
+
+> **Note:** Some experiments (e.g., `obo` and `bsgs` at large depths) require significant RAM. At D=12, our method uses approximately 34 GB. Variants without BSGS or OBO may exceed 128 GB and are expected to fail on smaller machines.
+
+---
+
+## Running Experiments
+
+All experiments are run from the `dt_go/` directory:
+
+```bash
+cd dt_go
+go run . -m <mode>
+```
+
+| Flag | Alias | Description |
+|------|-------|-------------|
+| `-mode <mode>` | `-m <mode>` | Select experiment mode |
+
+**Examples:**
+```bash
+go run . -m tree
+go run . -mode boosting
+```
+
+---
+
+## Experiment Modes
+
+The `MODE` variable (set via `-m`) selects which experiment to run. The table below maps each mode to the corresponding paper results.
+
+| Mode | Paper Reference | Description |
+|------|----------------|-------------|
+| `tree` | Table 5, Figure 1 (blue), Figure 2 | Single decision tree: baseline comparison and end-to-end performance breakdown. Output includes per-component time (CMP/BTS/TRAV), which corresponds directly to Figure 2. |
+| `obo` | Figure 3 (blue) | OBO ablation study. Produces the "Ours" line in Figure 3; the orange baseline (all-node O(2^D)) is a reference curve, not produced by this mode. |
+| `bsgs` | Figure 4 (blue) | BSGS ablation study. Produces the "Ours (TRAV)" line in Figure 4; the orange baseline (w/o BSGS) requires a separate run with BSGS disabled. |
+| `boosting` | Figure 5 (orange) | GBDT evaluation with batched bootstrapping (K=8, T=8). Produces the "Batched BTS" line in Figure 5. The "Single BTS" line (blue) is derived from the BTS component of `tree` mode output, not a separate mode. |
+| `parse` | Table 6 | Real-model sanity check on pre-trained XGBoost models (Credit Card Fraud dataset, D∈{8,10,12}, K=8). |
+
+---
+
+## Key Parameters
+
+Defined in `main.go`:
+
+| Variable | Description |
+|----------|-------------|
+| `GEN.K` | Number of trees for batched bootstrapping. `K = 1` = standard (non-batched) setting. Must satisfy `K ≤ T`. |
+| `D` | Tree depth |
+| `T` | Number of trees (for `boosting` mode) |
+
+---
+
+## Expected Output and Runtime
+
+Each experiment prints a summary table upon completion. Example output for `MODE = obo`:
+
+```
+==================================== SUMMARY ====================================
+K    D   |     CMP(s)    TREE(s)     BTS(s)    TRAV(s) | CMP(ms/slot) ...
+--------------------------------------------------------------------------------
+1    7   |    1214.69       0.00       0.00       0.00 |       37.069 ...
+================================================================================
+```
+
+**Approximate wall-clock runtimes** (on the reference hardware, N=32768 slots):
+
+> The output summary reports *amortized* time per slot (ms/slot). Total wall-clock time is `amortized_time × 32768`.
+
+| D | `tree` | `obo` | `bsgs` | `boosting` |
+|---|--------|-------|--------|------------|
+| 2 | 37 s | 20 s | 38 s | 164 s |
+| 3 | 64 s | 53 s | 60 s | 319 s |
+| 4 | 99 s | 2 min | 87 s | 494 s |
+| 5 | 130 s | 4 min | 113 s | 681 s |
+| 6 | 178 s | 9 min | 148 s | 965 s |
+| 7 | 227 s | 18 min | 190 s | 21 min |
+| 8 | 294 s | 36 min | 248 s | 29 min |
+| 9 | 395 s | 1.2 hr | 351 s | 41 min |
+| 10 | 585 s | 3.3 hr | 571 s | 1.1 hr |
+| 11 | 874 s | 5.5 hr | 1021 s | 1.7 hr |
+| 12 | 1383 s | OOM | OOM | 2.8 hr |
+
+**Notes on Figure 5 (batched bootstrapping):**
+- The **orange line** (Batched BTS) is reproduced by `boosting` mode. The reported BTS time is the per-tree amortized bootstrapping cost (`total_BTS_time / K / 32768`, where K=8).
+- The **blue line** (Single BTS) is the BTS component from `tree` mode (`BTS_time / 32768`), not a separate mode.
+
+> **Warning:** Full reproduction of all paper figures (`tree`, `obo`, `bsgs`, `boosting` across D=2–12) requires running many depth settings and may take **tens of hours** in total. For a quick sanity check, use `MODE = parse`, which completes in minutes using pre-provided model files.
+
+---
+
+## Sanity Check (`MODE = parse`)
+
+Pre-trained XGBoost models and preprocessed data are provided for the [Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) dataset (Kaggle, CC BY-SA 4.0).
+
+### Provided Files
+
+| Path | Description |
+|------|-------------|
+| `xgbdata/xgb_model_d{8,10,12}.json` | Trained XGBoost models (depth 8, 10, 12) |
+| `xgbdata/pred_d{8,10,12}.bin` | Plaintext model prediction outputs (ground truth) |
+| `x_test.bin` | Preprocessed input test data (N=32768 queries) |
+
+These files were generated by `xgboost/xgboost_test.ipynb` using `xgboost/creditcard.csv`.
+
+> **Note:** The raw dataset (`creditcard.csv`) is not included due to its license. It can be downloaded from Kaggle. Running the notebook is only necessary if you want to retrain or modify the models — the provided files are sufficient to reproduce Table 6 as-is.
+
+### Expected Result
+
+Across all settings, the protocol should yield **MatchRate ≥ 99.95%** between plaintext and encrypted evaluation, as reported in Table 6.
+
+### Python Dependencies (for notebook only)
+
+```
+python, ipython, xgboost, pandas, numpy
+```
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+This project uses [Lattigo v6](https://github.com/tuneinsight/lattigo) (Apache 2.0), vendored under `vendor/`.
