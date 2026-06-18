@@ -83,17 +83,7 @@ Defined in `main.go`:
 
 ---
 
-## Expected Output and Runtime
-
-Each experiment prints a summary table upon completion. Example output for `MODE = obo`:
-
-```
-==================================== SUMMARY ====================================
-K    D   |     CMP(s)    TREE(s)     BTS(s)    TRAV(s) | CMP(ms/slot) ...
---------------------------------------------------------------------------------
-1    7   |    1214.69       0.00       0.00       0.00 |       37.069 ...
-================================================================================
-```
+## Runtime
 
 **Approximate wall-clock runtimes** (on the reference hardware, N=32768 slots):
 
@@ -103,21 +93,19 @@ K    D   |     CMP(s)    TREE(s)     BTS(s)    TRAV(s) | CMP(ms/slot) ...
 |---|--------|-------|--------|------------|
 | 2 | 37 s | 20 s | 38 s | 164 s |
 | 3 | 64 s | 53 s | 60 s | 319 s |
-| 4 | 99 s | 2 min | 87 s | 494 s |
-| 5 | 130 s | 4 min | 113 s | 681 s |
-| 6 | 178 s | 9 min | 148 s | 965 s |
-| 7 | 227 s | 18 min | 190 s | 21 min |
-| 8 | 294 s | 36 min | 248 s | 29 min |
-| 9 | 395 s | 1.2 hr | 351 s | 41 min |
-| 10 | 585 s | 3.3 hr | 571 s | 1.1 hr |
-| 11 | 874 s | 5.5 hr | 1021 s | 1.7 hr |
-| 12 | 1383 s | OOM | OOM | 2.8 hr |
+| 4 | 99 s | 122 s | 87 s | 494 s |
+| 5 | 130 s | 247 s | 113 s | 681 s |
+| 6 | 178 s | 533 s | 148 s | 965 s |
+| 7 | 227 s | 1073 s | 190 s | 1287 s |
+| 8 | 294 s | 2168 s | 248 s | 1726 s |
+| 9 | 395 s | 4330 s | 351 s | 2479 s |
+| 10 | 585 s | 9855 s | 571 s | 3865 s |
+| 11 | 874 s | 19726 s | 1021 s | 6134 s |
+| 12 | 1383 s | OOM | OOM | 10082 s |
 
 **Notes on Figure 5 (batched bootstrapping):**
 - The **orange line** (Batched BTS) is reproduced by `boosting` mode. The reported BTS time is the per-tree amortized bootstrapping cost (`total_BTS_time / K / 32768`, where K=8).
 - The **blue line** (Single BTS) is the BTS component from `tree` mode (`BTS_time / 32768`), not a separate mode.
-
-> **Warning:** Full reproduction of all paper figures (`tree`, `obo`, `bsgs`, `boosting` across D=2–12) requires running many depth settings and may take **tens of hours** in total. For a quick sanity check, use `MODE = parse`, which completes in minutes using pre-provided model files.
 
 ---
 
