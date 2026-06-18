@@ -63,11 +63,11 @@ The `MODE` variable (set via `-m`) selects which experiment to run. The table be
 
 | Mode | Paper Reference | Description |
 |------|----------------|-------------|
-| `tree` | Table 5, Figure 1 (blue), Figure 2 | Single decision tree: baseline comparison and end-to-end performance breakdown. Output includes per-component time (CMP/BTS/TRAV), which corresponds directly to Figure 2. |
-| `obo` | Figure 3 (blue) | OBO ablation study. Produces the "Ours" line in Figure 3; the orange baseline (all-node O(2^D)) is a reference curve, not produced by this mode. |
-| `bsgs` | Figure 4 (blue) | BSGS ablation study. Produces the "Ours (TRAV)" line in Figure 4; the orange baseline (w/o BSGS) requires a separate run with BSGS disabled. |
-| `boosting` | Figure 5 (orange) | GBDT evaluation with batched bootstrapping (K=8, T=8). Produces the "Batched BTS" line in Figure 5. The "Single BTS" line (blue) is derived from the BTS component of `tree` mode output, not a separate mode. |
-| `parse` | Table 6 | Real-model sanity check on pre-trained XGBoost models (Credit Card Fraud dataset, D∈{8,10,12}, K=8). |
+| `tree` | Table 5, Figure 1–5 | Main single-tree evaluation. Produces Table 5 and Figures 1–2 directly. Also serves as the **blue reference line** in Figures 3, 4, and 5 (using CMP/BTS/TRAV breakdown from the output). |
+| `obo` | Figure 3 (orange) | Produces the **w/o OBO** line in Figure 3 (all-node O(2^D) comparison baseline). Reports `avg_meanAbs` and `global_maxAbs` only; `matchRate=0%` is expected, as this mode checks comparison accuracy only, not end-to-end tree evaluation. |
+| `bsgs` | Figure 4 (orange) | Produces the **w/o BSGS** line in Figure 4 (naive O(2^D) traversal baseline). |
+| `boosting` | Figure 5 (orange) | GBDT evaluation with level-major evaluation and batched bootstrapping (K=8, T=8). Reports total runtime across all components; Figure 5 (orange) is derived by taking the BTS time from the output and dividing by K to obtain per-tree BTS time. |
+| `parse` | Table 6 | End-to-end validation on pre-trained XGBoost models (Credit Card Fraud dataset, D∈{8,10,12}, K=8). |
 
 ---
 
@@ -78,7 +78,7 @@ Defined in `main.go`:
 | Variable | Description |
 |----------|-------------|
 | `GEN.K` | Number of trees for batched bootstrapping. `K = 1` = standard (non-batched) setting. Must satisfy `K ≤ T`. |
-| `D` | Tree depth |
+| `D` | Maximum tree depth to evaluate (default: 12). Experiments iterate depths 2, 3, ..., D. Set to a smaller value to run only low-depth experiments and reduce total runtime. (`parse` mode is unaffected; it always runs D∈{8,10,12}.) |
 | `T` | Number of trees (for `boosting` mode) |
 
 ---
@@ -89,23 +89,21 @@ Defined in `main.go`:
 
 > The output summary reports *amortized* time per slot (ms/slot). Total wall-clock time is `amortized_time × 32768`.
 
-| D | `tree` | `obo` | `bsgs` | `boosting` |
-|---|--------|-------|--------|------------|
-| 2 | 37 s | 20 s | 38 s | 164 s |
-| 3 | 64 s | 53 s | 60 s | 319 s |
-| 4 | 99 s | 122 s | 87 s | 494 s |
-| 5 | 130 s | 247 s | 113 s | 681 s |
-| 6 | 178 s | 533 s | 148 s | 965 s |
-| 7 | 227 s | 1073 s | 190 s | 1287 s |
-| 8 | 294 s | 2168 s | 248 s | 1726 s |
-| 9 | 395 s | 4330 s | 351 s | 2479 s |
-| 10 | 585 s | 9855 s | 571 s | 3865 s |
-| 11 | 874 s | 19726 s | 1021 s | 6134 s |
-| 12 | 1383 s | OOM | OOM | 10082 s |
+| D | `tree` | `obo` | `bsgs` | `boosting` | `parse` |
+|---|--------|-------|--------|------------|---------|
+| 2 | 37 s | 20 s | 38 s | 164 s | — |
+| 3 | 64 s | 53 s | 60 s | 319 s | — |
+| 4 | 99 s | 122 s | 87 s | 494 s | — |
+| 5 | 130 s | 247 s | 113 s | 681 s | — |
+| 6 | 178 s | 533 s | 148 s | 965 s | — |
+| 7 | 227 s | 1073 s | 190 s | 1287 s | — |
+| 8 | 294 s | 2168 s | 248 s | 1726 s | 1816 s |
+| 9 | 395 s | 4330 s | 351 s | 2479 s | — |
+| 10 | 585 s | 9855 s | 571 s | 3865 s | 2926 s |
+| 11 | 874 s | 19726 s | 1021 s | 6134 s | — |
+| 12 | 1383 s | OOM | OOM | 10082 s | 5770 s |
 
-**Notes on Figure 5 (batched bootstrapping):**
-- The **orange line** (Batched BTS) is reproduced by `boosting` mode. The reported BTS time is the per-tree amortized bootstrapping cost (`total_BTS_time / K / 32768`, where K=8).
-- The **blue line** (Single BTS) is the BTS component from `tree` mode (`BTS_time / 32768`), not a separate mode.
+> **Warning:** Full reproduction of all paper figures (`tree`, `obo`, `bsgs`, `boosting` across D=2–12) requires running many depth settings and may take **tens of hours** in total.
 
 ---
 
