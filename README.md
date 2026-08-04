@@ -38,10 +38,10 @@ All results in the paper were obtained on the following hardware:
 
 ## Running Experiments
 
-All experiments are run from the `dt_go/` directory:
+After cloning the repository, run all experiments from the repository root:
 
 ```bash
-cd dt_go
+cd LCPDTE
 go run . -m <mode>
 ```
 
